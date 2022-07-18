@@ -31,18 +31,18 @@ export function isURL(s) {
 }
 
 /**
- * 验证用户名
+ * 验证用户名://用户名正则，4到16位（字母，数字，下划线，减号）
  * @param {Object} s
  */
 export function isUsername(s) {
-	return /^[a-zA-Z0-9]{5,50}$/.test(s)
+	return /^[a-zA-Z0-9_-]{4,16}$/.test(s)
 }
 
 
 /**
- * 验证密码
+ * 验证密码:长度至少为8，至少含有一个字母和一个数字
  * @param {Object} s
  */
 export function isPassword(s) {
-	return /^[a-zA-Z0-9]{6,20}$/.test(s)
+	return /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/.test('qwer1234')
 }

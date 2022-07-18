@@ -1,13 +1,13 @@
 <template>
 	<el-dialog title="提示" v-model="visible" width="25%">
 		<el-form :model="dataForm" :rules="dataRule" ref="dataForm" label-width="80px">
-			<el-form-item label="原密码" prop="password">
+			<el-form-item label="原密码" >
 				<el-input type="password" v-model="dataForm.password" size="medium" clearable />
 			</el-form-item>
-			<el-form-item label="新密码" prop="newPassword">
+			<el-form-item label="新密码">
 				<el-input type="password" v-model="dataForm.newPassword" size="medium" clearable />
 			</el-form-item>
-			<el-form-item label="确认密码" prop="confirmPassword">
+			<el-form-item label="确认密码" >
 				<el-input type="password" v-model="dataForm.confirmPassword" size="medium" clearable />
 			</el-form-item>
 		</el-form>
@@ -21,6 +21,7 @@
 </template>
 
 <script>
+import router from '../router/index.js';
 export default {
 	data() {
 		const validateConfirmPassword = (rule, value, callback) => {
@@ -49,8 +50,46 @@ export default {
 		};
 	},
 	methods: {
-		
-	}
+    init() {
+      this.visible = true;  //显示弹窗
+      //因为清空表单控件是异步的，所以把清空表单控件放在下次DOM更新循环中
+      this.$nextTick(() => {
+        this.$refs['dataForm'].resetFields();
+      });
+    },
+    dataFormSubmit: function() {
+      let that = this;
+      //前端表单验证
+      that.$refs['dataForm'].validate(valid => {
+        if (valid) {
+          let data = {
+            password: that.dataForm.password,
+            newPassword: that.dataForm.newPassword
+          }
+          that.$http('user/updatePassword', 'POST', data, true, resp => {
+            if (resp.rows == 1) {
+              that.$message({
+                message: resp.msg,
+                type: 'success',
+                duration: 1200,
+              });
+              that.visible = false;
+/*              localStorage.removeItem("permissions");
+              localStorage.removeItem("token");
+              router.push({name:"Home"})*/
+            } else {
+              that.$message({
+                message: resp.msg,
+                type: 'error',
+                duration: 1200,
+              });
+            }
+          });
+        }
+      });
+    }
+
+  }
 };
 </script>
 

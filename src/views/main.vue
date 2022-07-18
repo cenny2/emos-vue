@@ -34,9 +34,8 @@
 							</span>
 							<template #dropdown>
 								<el-dropdown-menu>
-									<el-dropdown-item @click="updatePasswordHandle()">
-										修改密码
-									</el-dropdown-item>
+
+                  <el-dropdown-item @click="updatePasswordHandler()">修改密码</el-dropdown-item>
 									<el-dropdown-item @click="logout">退出</el-dropdown-item>
 								</el-dropdown-menu>
 							</template>
@@ -362,15 +361,30 @@ export default {
 			this.mainTabs = [];
 			this.menuActiveName = '';
 			this.$router.push({ name: 'Home' });
-		}
+		},
+
+    logout:function (){
+      let that = this;
+      that.$http("user/logout","POST",null,true,function (res) {
+        localStorage.removeItem("permissions");
+        localStorage.removeItem("token");
+        that.$router.push({name : 'Login'})
+      })
+    },
+    updatePasswordHandler:function(){
+		  this.updatePasswordVisible = true;
+      this.$nextTick(()=>{
+        this.$refs.updatePassword.init();
+      });
+    }
 	},
 	mounted: function() {
 		let that = this;
 		//加载用户数据
 		that.$http('user/loadUserInfo', 'GET', null, true, function(resp) {
 			let json = resp;
-			let name = json.name;
-			let photo = json.photo;
+			let name = json.result.name;
+			let photo = json.result.photo;
 			that.name = name;
 			that.photo = photo;
 		});

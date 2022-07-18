@@ -87,7 +87,7 @@ app.config.globalProperties.$echarts = echarts  //设置全局变量$echarts
 
 
 //后端项目的URL根路径
-let baseUrl = "http://192.168.229.1:8090/emos-api/"
+let baseUrl = "http://localhost:9090/emos-service/"
 
 app.config.globalProperties.$baseUrl = baseUrl //设置全局变量$baseUrl
 

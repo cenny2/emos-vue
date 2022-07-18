@@ -34,7 +34,7 @@
 									/>
 								</div>
 								<div class="row">
-									<el-button type="primary" class="btn">登陆系统</el-button>
+									<el-button type="primary" class="btn" @click="login">登陆系统</el-button>
 								</div>
 								<div class="row"><a class="link" @click="changeMode">二维码登陆</a></div>
 							</div>
@@ -56,6 +56,8 @@
 <script>
 import 'element-plus/lib/theme-chalk/display.css';
 import router from '../router/index.js';
+import {isUsername,isPassword} from "../utils/validate";
+
 export default {
 	data: function() {
 		return {
@@ -104,7 +106,48 @@ export default {
 				this.qrCode = resp.pic;
 				this.uuid = resp.uuid;
 			});
-		}
+		},
+    login:function (){
+		  let that = this;
+		  //校验用户名和密码的格式是否正确
+      if (!isUsername(that.username)){
+        that.$message({
+          message:"用户名格式不正确！",
+          type:'error',
+          duration:1200
+        })
+      }
+/*      else if (!isPassword(that.password)){
+        that.$message({
+          message:"请输入密码！",
+          type:'error',
+          duration:1200
+        })}*/
+      else {
+       //通过密码和用户名的前端校验，发送Ajax请求
+        let data = { username: that.username, password: that.password};
+        that.$http("user/login","POST",data,true,function (res){
+          //如果返回失败
+          if (!res.result){
+            that.$message({
+              message:"用户名或密码错误！",
+              type:'error',
+              duration:1200
+            })
+          }else{
+            //返回成功的情况
+            //获取后端返回的权限集合以及token令牌
+            let permissions = res.permissions;
+            let token = res.token;
+            localStorage.setItem("permissions",permissions);
+            localStorage.setItem("token",token);
+            //页面跳转
+            router.push({name:"Home"})
+
+          }
+        })
+      }
+    }
 	}
 };
 </script>
