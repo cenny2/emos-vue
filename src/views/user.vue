@@ -92,14 +92,14 @@
 			/>
 			<el-table-column prop="hiredate" header-align="center" align="center" min-width="130" label="入职日期" />
 			<el-table-column
-				prop="roles"
+				prop="roleName"
 				header-align="center"
 				align="center"
 				min-width="150"
 				label="角色"
 				:show-overflow-tooltip="true"
 			/>
-			<el-table-column prop="dept" header-align="center" align="center" min-width="120" label="部门" />
+			<el-table-column prop="deptName" header-align="center" align="center" min-width="120" label="部门" />
 			<el-table-column prop="status" header-align="center" align="center" min-width="100" label="状态" />
 			<el-table-column header-align="center" align="center" width="150" label="操作">
 				<template #default="scope">
@@ -133,13 +133,13 @@
 			</el-table-column>
 		</el-table>
 		<el-pagination
-			@size-change="sizeChangeHandle"
-			@current-change="currentChangeHandle"
 			:current-page="pageIndex"
 			:page-sizes="[10, 20, 50]"
 			:page-size="pageSize"
 			:total="totalCount"
 			layout="total, sizes, prev, pager, next, jumper"
+      @size-change="sizeChangeHandle"
+      @current-change="currentChangeHandle"
 		></el-pagination>
 		<add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="loadDataList"></add-or-update>
 		<dimiss v-if="dimissVisible" ref="dimiss" @refreshDataList="loadDataList"></dimiss>
@@ -179,26 +179,98 @@ export default {
 		};
 	},
 	methods: {
-		loadRoleList: function() {
-			let that = this;
-			that.$http('role/searchAllRole', 'GET', null, true, function(resp) {
-				that.roleList = resp.list;
-			});
-		},
-		loadDeptList: function() {
-			let that = this;
-			that.$http('dept/searchAllDept', 'GET', null, true, function(resp) {
-				that.deptList = resp.list;
-			});
-		},
-		selectionChangeHandle: function(val) {
-			this.dataListSelections = val;
-		}
-	},
-	created: function() {
-		this.loadRoleList();
-		this.loadDeptList();
-	}
+    searchHandle: function() {
+      //先执行表单验证
+      this.$refs['dataForm'].validate(valid => {
+        if (valid) {
+          //清理页面上的表单验证结果
+          this.$refs['dataForm'].clearValidate();
+          //不允许上传空字符串给后端，但是可以传null值
+          if (this.dataForm.name == '') {
+            this.dataForm.name = null;
+          } if (this.dataForm.role ===''){
+            this.dataForm.role = null
+          }  if (this.dataForm.sex ===''){
+            this.dataForm.sex = null
+          }
+
+          //如果当前页面不是第一页，则跳转到第一页显示查询的结果
+          if (this.pageIndex != 1) {
+            this.pageIndex = 1;
+          }
+          this.loadDataList();
+        } else {
+          return false;
+        }
+      });
+    },
+
+    loadDataList:function (){
+      let that = this;
+      //加载数据滚动条
+      that.dataListLoading = true;
+      let data = {
+        page: that.pageIndex,
+        length:that.pageSize,
+        name: that.dataForm.name,
+        sex: that.dataForm.sex,
+        role: that.dataForm.role,
+        deptId: that.dataForm.deptId,
+        status: that.dataForm.status
+      };
+      that.$http("user/queryUserByPage",'POST',data,true,function (resp){
+        let list = resp.page.list;
+        for(let one of list){
+          if (one.status == 1){
+            one.status = '在职'
+          }else if (one.status == 2){
+            one.status = '离职'
+          }
+        }
+        //将查询出来的pageUtils对象赋值给datalist
+        that.dataList = list
+        //获取总页数
+        that.totalCount = resp.page.totalCount;
+        //渲染数据，取消滚动条显示
+        that.dataListLoading = false;
+      });
+    },
+    loadRoleList: function() {
+      let that = this;
+      that.$http('role/searchAllRole', 'GET', null, true, function(resp) {
+        that.roleList = resp.list;
+      });
+    },
+    loadDeptList: function() {
+      let that = this;
+      that.$http('dept/searchAllDept', 'GET', null, true, function(resp) {
+        that.deptList = resp.list;
+      });
+    },
+    selectionChangeHandle: function(val) {
+      this.dataListSelections = val;
+    },
+    //每页数据大小改变执行函数
+    sizeChangeHandle(val){
+      this.pageSize = val;
+      //更改每页显示记录数量后，都从第一页开始查询
+      this.pageIndex = 1;
+      this.loadDataList();
+    },
+    //当前页修改执行函数
+    currentChangeHandle(val)  {
+      this.pageIndex = val;
+      this.loadDataList();
+    }
+    },
+    created: function() {
+      this.loadDataList();
+      this.loadRoleList();
+      this.loadDeptList();
+    },
+
+
+
 };
 </script>
 
