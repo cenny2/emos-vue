@@ -29,7 +29,9 @@
 					<el-menu-item class="site-navbar__avatar" index="3">
 						<el-dropdown>
 							<span class="el-dropdown-link">
-								<img :src="photo" />
+
+                <el-avatar> <img :src="photo" /> </el-avatar>
+
 								{{ name }}
 							</span>
 							<template #dropdown>
